@@ -122,6 +122,7 @@ def main():
 
             if job:
                 job_id = job["id"]
+                filename = job.get("filename", "document.pdf")
                 raw_path = job.get("file_url") or job.get("filepath") or ""
                 if raw_path.startswith("http://") or raw_path.startswith("https://"):
                     file_url = raw_path
