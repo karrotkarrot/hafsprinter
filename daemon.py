@@ -122,8 +122,11 @@ def main():
 
             if job:
                 job_id = job["id"]
-                filename = job.get("filename", "document.pdf")
-                file_url = f"{server_url.rstrip('/')}{job['filepath']}"
+                raw_path = job.get("file_url") or job.get("filepath") or ""
+                if raw_path.startswith("http://") or raw_path.startswith("https://"):
+                    file_url = raw_path
+                else:
+                    file_url = f"{server_url.rstrip('/')}{raw_path}"
 
                 print(f"[{time.strftime('%X')}] Processing job: {filename} (ID: {job_id})")
 

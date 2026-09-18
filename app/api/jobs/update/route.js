@@ -15,7 +15,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
     }
     
-    const result = updateJobStatus(id, status);
+    const result = await updateJobStatus(id, status);
     
     if (!result.success) {
       if (result.reason === 'cancelled_lock') {

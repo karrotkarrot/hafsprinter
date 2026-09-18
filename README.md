@@ -95,3 +95,30 @@ Available daemon CLI options:
 * **Pre-Print Cancellation Check**: The daemon verifies job status after downloading to ensure no cancelled document is printed.
 * **Multilingual Unicode Preservation**: Safely preserves Korean, CJK, and international characters in filenames while filtering unsafe filesystem path characters.
 * **Magic Bytes & Size Verification**: Validates `%PDF-` header and limits file uploads to 50MB.
+
+---
+
+## ☁️ Deploying to Vercel + Supabase (Serverless & Free Tier)
+
+Hafsprinter supports running on Vercel with Supabase for free, cloud-native hosting:
+
+### 1. Set Up Supabase
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Go to **SQL Editor** and run the contents of [`supabase-schema.sql`](./supabase-schema.sql).
+3. Go to **Storage** -> **New Bucket**, name it `print-jobs`, and toggle **Public bucket** to `ON`.
+
+### 2. Deploy to Vercel
+1. Push your repository to GitHub.
+2. In [Vercel](https://vercel.com), click **Add New Project** and import your repository.
+3. In **Environment Variables**, add:
+   * `NEXT_PUBLIC_SUPABASE_URL` (from Supabase -> Project Settings -> API)
+   * `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from Supabase -> Project Settings -> API)
+   * `SUPABASE_SERVICE_ROLE_KEY` (from Supabase -> Project Settings -> API)
+4. Click **Deploy**.
+
+### 3. Connect the Windows Printer Daemon
+Run the daemon on your local Windows PC pointing to your Vercel domain:
+```bash
+python daemon.py --server https://your-app.vercel.app
+```
+*(Files printed or cancelled are automatically pruned from Supabase Storage to ensure you never exceed the free storage quota).*
