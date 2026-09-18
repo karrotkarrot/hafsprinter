@@ -54,9 +54,51 @@ def update_job_status(server_url, job_id, status):
         print(f"Failed to update status for {job_id}: {e}")
     return False
 
+import subprocess
+import shutil
+
+def find_sumatra_pdf():
+    """Locate SumatraPDF executable if available."""
+    # 1. Check current directory
+    local_path = os.path.join(os.getcwd(), "SumatraPDF.exe")
+    if os.path.isfile(local_path):
+        return local_path
+
+    # 2. Check directory where daemon.py lives
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.join(script_dir, "SumatraPDF.exe")
+    if os.path.isfile(script_path):
+        return script_path
+
+    # 3. Check system PATH
+    which_path = shutil.which("SumatraPDF.exe") or shutil.which("SumatraPDF")
+    if which_path:
+        return which_path
+
+    # 4. Check common Windows installation paths
+    for p in [
+        r"C:\Program Files\SumatraPDF\SumatraPDF.exe",
+        r"C:\Program Files (x86)\SumatraPDF\SumatraPDF.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\SumatraPDF\SumatraPDF.exe"),
+    ]:
+        if os.path.isfile(p):
+            return p
+
+    return None
+
 def print_pdf(filepath):
     """Send PDF to physical printer on Windows or simulate on non-Windows."""
     if IS_WINDOWS:
+        sumatra_exe = find_sumatra_pdf()
+        if sumatra_exe:
+            print(f"Printing silently via SumatraPDF ({sumatra_exe})...")
+            # -print-to-default prints to Windows default printer without GUI
+            # -silent suppresses dialogs and error windows
+            subprocess.run([sumatra_exe, "-print-to-default", "-silent", filepath], check=True)
+            time.sleep(2)
+            print("Document dispatched to printer spooler successfully.")
+            return
+
         print(f"Sending to default printer via Windows Shell API...")
         # ShellExecute with 'print' verb sends the document to default associated PDF handler and printer
         win32api.ShellExecute(0, "print", filepath, None, ".", 0)
